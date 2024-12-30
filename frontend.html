@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SSE Example</title>
+</head>
+<body>
+    <style>
+        @keyframes dots {
+            0%, 20% { content: ""; }
+            40% { content: "."; }
+            60% { content: ".."; }
+            80%, 100% { content: "..."; }
+        }
+
+        #time.loading::after {
+            content: "";
+            animation: dots 1.5s infinite;
+        }
+       
+        #time.loaded::after {
+            content: "";
+            animation: none;
+        }
+    </style>
+
+    <h2>SSE Example</h2>
+    <div id="time"></div>
+
+    <script>
+        const eventSource = new EventSource('http://localhost:3003', {withCredentials: true});
+        console.log(eventSource);
+        eventSource.onopen = function () {
+            console.log('SSE connection opened.');
+            document.getElementById('time').className = 'loading';
+        };
+
+        eventSource.addEventListener('message', function (event) {
+            console.log('Received data:', event.data);
+            document.getElementById('time').textContent += event.data;
+        }, false);
+
+        eventSource.onerror = function (event) {
+           console.error('SSE Error:', event);
+           document.getElementById('time').className = 'loaded';
+            if (event.target.readyState === EventSource.CLOSED) {
+                console.log('SSE connection closed.');
+            }
+        };
+        eventSource.onclose = function () {
+            document.getElementById('time').className = 'loaded';
+            console.log('SSE connection closed by server.');
+        };
+    </script>
+</body>
+</html>
